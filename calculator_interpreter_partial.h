@@ -5,7 +5,7 @@ typedef struct {
     int value;
 } constantNodeType;
 
-extern int symbol_table[26]; // this is a reference to the symbol table specified on the yacc (.y) file
+extern int symbol_table[26]; // this is a reference to the symbol table specified on the yacc (.y) file. make this hashmap
 
 /* the symbol table is implemented by a simple array of ints (our calculator supports integer only)
  * so the identifiers nodes contain a index to the symbol table

@@ -20,6 +20,16 @@ int interpret(nodeType *p) {
                 case '=':
                     return symbol_table[p->operator_.poperands[0]->identifier.identifier_index] = interpret(
                             p->operator_.poperands[1]);
+                case IF:
+                    if (interpret(p->operator_.poperands[0]))
+                        interpret(p->operator_.poperands[1]);
+                    else if (p->operator_.number_of_operands > 2)
+                        interpret(p->operator_.poperands[2]);
+                    return 0;
+                case WHILE:
+                    while(interpret(p->operator_.poperands[0]))
+                        interpret(p->operator_.poperands[1]);
+                    return 0;
                 case '+':
                     return interpret(p->operator_.poperands[0]) + interpret(p->operator_.poperands[1]);
                 case '-':
@@ -27,10 +37,11 @@ int interpret(nodeType *p) {
                 case '*':
                     return interpret(p->operator_.poperands[0]) * interpret(p->operator_.poperands[1]);
                 case '/':
-                    //if(interpret(p->operator_.poperands[1])==0)
                     return interpret(p->operator_.poperands[0]) / interpret(p->operator_.poperands[1]);
                 case '%':
                     return interpret(p->operator_.poperands[0]) % interpret(p->operator_.poperands[1]);
+                case UMINUS:
+                    return -interpret(p->operator_.poperands[0]);
             }
     }
     return 0;

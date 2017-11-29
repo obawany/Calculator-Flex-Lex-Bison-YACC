@@ -20,4 +20,3 @@ Once in the calculator, you can run several different operations. In order for i
 
 To assign a variable just write `a=4`
 
-[Felix Singerman](http://github.com/flsing) was a contributer

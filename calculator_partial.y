@@ -12,7 +12,8 @@ int interpret(nodeType *p);
 int yylex(void);
 
 void yyerror(char *s);
-int symbol_table[26];
+int symbol_table[26]; // need to make this a hashtable and change every reference of it in every file
+//Map<integer,integer> hm = new HashMap<>();
 %}
 
 %union { //Create a union to handle the integer input values, the index to the symble table for identifiers, or the
@@ -24,13 +25,16 @@ int symbol_table[26];
 
 %token <input_Value> INTEGER
 %token <symbol_index> VARIABLE
-%token PRT
+%token WHILE IF PRT
 
-%left '+' '-' '%'
-%left '*' '/' 
-//%noassoc '-'
 
-%type <nodePointer> stmt expr
+%left '+' '-' 
+%left '*' '/' '%'
+%nonassoc UMINUS
+%nonassoc IFX
+%nonassoc ELSE
+
+%type <nodePointer> stmt expr stmt_list
 
 %%
 
@@ -45,10 +49,19 @@ function:
         ;
 
 stmt:
-    ';'				{ $$ = opera(';', 2, NULL, NULL); }
-    | expr ';'			{ $$ = $1; }
-    | PRT expr ';'		{ $$ = opera(PRT, 1, $2); }
-    | VARIABLE '=' expr ';'	{ $$ = opera('=', 2, identifier($1), $3); }
+    ';'				            { $$ = opera(';', 2, NULL, NULL); }
+    | expr ';'			        { $$ = $1; }
+    | PRT expr ';'		        { $$ = opera(PRT, 1, $2); }
+    | VARIABLE '=' expr ';'	    { $$ = opera('=', 2, identifier($1), $3); }
+    | WHILE '(' expr ')' stmt   { $$ = opera(WHILE, 2, $3, $5); }
+    | IF '(' expr ')' stmt %prec IFX     { $$ = opera(IFX, 2, $3, $5); }
+    | IF '(' expr ')' stmt ELSE stmt     { $$ = opera(ELSE, 3, $3, $5, $7); }
+    | '{' stmt_list '}'         {$$ = $2; }
+    ;
+
+stmt_list:
+       stmt                    { $$ = $1; }
+    |  stmt_list stmt          { $$ = opera(';', 2, $1, $2); }
     ;
 
 expr:
@@ -58,12 +71,9 @@ expr:
     | expr '-' expr         { $$ = opera('-', 2, $1, $3); }
     | expr '%' expr         { $$ = opera('%', 2, $1, $3); }
     | expr '*' expr         { $$ = opera('*', 2, $1, $3); }
-    | expr '/' expr         { if($3==0)
-                                yyerror("divide 0");
-                            else 
-                                $$ = opera('/', 2, $1, $3); }
-
-    //| '-' expr              { $$ = opera('UNIMUS', 2, -$2); }
+    | expr '/' expr         { $$ = opera('/', 2, $1, $3); }
+    | '(' expr ')'          { $$ = $2; }
+    | '-' expr %prec UMINUS { $$ = opera(UMINUS, 1, $2); } 
     ;
 
 %%
